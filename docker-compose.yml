@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    container_name: express-jwt
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - db
+    restart: unless-stopped
+  db:
+    image: postgres:16
+    container_name: express-jwt-db
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+volumes:
+  pgdata:
