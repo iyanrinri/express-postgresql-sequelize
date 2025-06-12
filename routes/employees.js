@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const employeesController = require('../controllers/employeesController');
+const { verifyToken } = require('../controllers/authController');
 
 /**
  * @swagger
@@ -25,7 +26,7 @@ const employeesController = require('../controllers/employeesController');
  *               items:
  *                 $ref: '#/components/schemas/Employee'
  */
-router.get('/', employeesController.list);
+router.get('/', verifyToken, onlyAdmin, employeesController.list);
 
 /**
  * @swagger
@@ -50,7 +51,7 @@ router.get('/', employeesController.list);
  *       404:
  *         description: Employee not found
  */
-router.get('/:id', employeesController.get);
+router.get('/:id', verifyToken, onlyAdmin, employeesController.get);
 
 /**
  * @swagger
@@ -72,7 +73,7 @@ router.get('/:id', employeesController.get);
  *             schema:
  *               $ref: '#/components/schemas/Employee'
  */
-router.post('/', employeesController.create);
+router.post('/', verifyToken, onlyAdmin, employeesController.create);
 
 /**
  * @swagger
@@ -103,7 +104,7 @@ router.post('/', employeesController.create);
  *       404:
  *         description: Employee not found
  */
-router.put('/:id', employeesController.update);
+router.put('/:id', verifyToken, onlyAdmin, employeesController.update);
 
 /**
  * @swagger
@@ -124,6 +125,14 @@ router.put('/:id', employeesController.update);
  *       404:
  *         description: Employee not found
  */
-router.delete('/:id', employeesController.remove);
+router.delete('/:id', verifyToken, onlyAdmin, employeesController.remove);
 
 module.exports = router;
+
+// Middleware: only allow admin
+function onlyAdmin(req, res, next) {
+  if (req.user && req.user.type === 'user' && req.user.role === 'admin') {
+    return next();
+  }
+  return res.status(403).json({ message: 'Forbidden: Admins only' });
+}
